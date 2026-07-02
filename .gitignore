@@ -1,0 +1,21 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node
+frontend/node_modules/
+
+# Database
+*.db
+
+# Dataset
+datasets/
+backend/datasets/
+*.npy
+
+# VS Code
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
