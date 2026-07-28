@@ -14,6 +14,10 @@ import ModelPerformance from "../components/ModelPerformance";
 
 import AIClinicalSummary from "../components/AIClinicalSummary";
 import AIRecommendation from "../components/AIRecommendation";
+import ECGUpload from "../components/ECGUpload";
+
+import HealthIntelligence from "../components/HealthIntelligence";
+import PatientTwin from "../components/PatientTwin";
 
 function Dashboard(){
 
@@ -31,7 +35,43 @@ const [ecgLength,setEcgLength]=useState(0);
 
 
 const [explanation,setExplanation]=useState(null);
+const [intelligence,setIntelligence]=useState(null);
+const [patientTwin,setPatientTwin]=useState(null);
+const loadDashboard = () => {
 
+    API.get(`/patients/${patientId}/dashboard`)
+
+        .then((response) => {
+
+            setData(response.data);
+
+        })
+
+        .catch((error) => {
+
+            console.log("Dashboard Error:", error);
+
+        });
+
+};
+
+const loadExplanation = () => {
+
+    API.get(`/patients/${patientId}/explanation`)
+
+        .then((response) => {
+
+            setExplanation(response.data);
+
+        })
+
+        .catch((error) => {
+
+            console.log("Explanation Error:", error);
+
+        });
+
+};
 
 
 useEffect(()=>{
@@ -65,75 +105,64 @@ error
 
 
 
+useEffect(() => {
+
+    loadDashboard();
+
+}, [patientId]);
 
 
+useEffect(() => {
 
+    loadExplanation();
 
-useEffect(()=>{
+}, [patientId]);
 
+const loadHealthIntelligence = () => {
 
-API.get(
-`/patients/${patientId}/dashboard`
-)
+    API.get(`/patients/${patientId}/health-intelligence`)
 
+        .then((response) => {
 
-.then((response)=>{
+            setIntelligence(response.data);
 
+        })
 
-setData(response.data);
+        .catch((error) => {
 
+            console.log("Health Intelligence Error:", error);
 
-})
+        });
 
+};
 
-.catch((error)=>{
+useEffect(() => {
 
+    loadHealthIntelligence();
 
-console.log(
-"Dashboard Error:",
-error
-);
+}, [patientId]);
+const loadPatientTwin = () => {
 
+    API.get(`/patients/${patientId}/patient-twin`)
 
-});
+        .then((response) => {
 
+            setPatientTwin(response.data);
 
-},[patientId]);
+        })
 
+        .catch((error) => {
 
-useEffect(()=>{
+            console.log("Patient Twin Error:", error);
 
+        });
 
-API.get(
-`/patients/${patientId}/explanation`
-)
+};
+useEffect(() => {
 
+    loadPatientTwin();
 
-.then((response)=>{
-
-
-setExplanation(response.data);
-
-
-})
-
-
-.catch((error)=>{
-
-
-console.log(
-"Explanation Error:",
-error
-);
-
-
-});
-
-
-},[patientId]);
-
-
-
+}, [patientId]);
 
 if(!data){
 
@@ -253,19 +282,28 @@ value={patient.id}
 
 </select>
 
-
 </div>
 
-
-
-
-
-
-
-
+<h2 className="section-title">
+    ECG Analysis
+</h2>
+<ECGUpload
+    patientId={patientId}
+    onUploadSuccess={() => {
+        loadDashboard();
+        loadExplanation();
+        loadHealthIntelligence();
+        loadPatientTwin();
+    }}
+/>
 
 <div className="page-title">
 
+
+
+</div>
+
+<div className="page-title">
 
 <h2>
 
@@ -288,118 +326,103 @@ Real-time cardiac health analysis and prediction
 
 
 
+{/* ================= Patient Overview ================= */}
 
+<h2 className="section-title">
+    Patient Overview
+</h2>
 
 <div className="top-grid">
 
+    <PatientCard
+        patient={data.patient}
+    />
 
+    <RiskCard
+        prediction={data.latest_prediction}
+    />
 
-<PatientCard
+    <AIClinicalSummary
+        patient={data.patient}
+        prediction={data.latest_prediction}
+        explanation={explanation}
+    />
 
-patient={data.patient}
+    <AIRecommendation
+        prediction={data.latest_prediction}
+    />
 
-/>
+</div>
 
+{/* ================= AI Health Intelligence ================= */}
 
+<h2 className="section-title">
+    AI Health Intelligence
+</h2>
 
+<div className="top-grid">
 
-<RiskCard
+    <HealthSummary
+        summary={data.health_summary}
+        prediction={data.latest_prediction}
+        ecgLength={ecgLength}
+    />
 
-prediction={data.latest_prediction}
+    <HealthIntelligence
+        intelligence={intelligence}
+    />
 
-/>
-
-<AIClinicalSummary
-
-patient={data.patient}
-
-prediction={data.latest_prediction}
-
-explanation={explanation}
-
-/>
-
-<AIRecommendation
-
-prediction={data.latest_prediction}
-
-/>
+    <PatientTwin
+        twin={patientTwin}
+    />
 
 </div>
 
 
-
-
-
-
-
-<HealthSummary
-
-
-summary={data.health_summary}
-
-
-prediction={data.latest_prediction}
-
-
-ecgLength={ecgLength}
-
-
-/>
-
-
-
-
-
-
-
+{/* ================= ECG Analysis ================= */}
 
 
 <ECGChart
-
-patientId={patientId}
-
-setEcgLength={setEcgLength}
-
+    patientId={patientId}
+    setEcgLength={setEcgLength}
 />
 
+{
+    explanation &&
+    <AIExplanation
+        explanation={explanation}
+    />
+}
 
+
+
+{/* ================= AI Model ================= */}
+
+<h2 className="section-title">
+    AI Model Performance
+</h2>
 
 <ModelPerformance />
 
 
 
 
+{/* ================= Prediction Analytics ================= */}
 
+<h2 className="section-title">
+    Prediction Analytics
+</h2>
 
 <PredictionHistory
-
-history={data.history}
-
+    history={data.history}
 />
 
 <HealthTimeline
-
-history={data.history}
-
+    history={data.history}
 />
-
-{
-
-explanation &&
-
-<AIExplanation
-
-explanation={explanation}
-
-/>
-
-}
 
 <RiskTrend
-
-history={data.history}
-
+    history={data.history}
 />
 
 </div>

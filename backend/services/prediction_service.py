@@ -4,7 +4,54 @@ from database.models import ECGPrediction
 import numpy as np
 
 from model.model_loader import model
+from fastapi import UploadFile
 
+async def predict_uploaded_ecg(
+    patient_id: int,
+    file: UploadFile
+):
+
+    contents = await file.read()
+
+    text = contents.decode("utf-8")
+
+    ecg_data = []
+
+    try:
+
+        for line in text.splitlines():
+
+            line = line.strip()
+
+            if line == "":
+                continue
+
+            ecg_data.append(float(line))
+
+    except ValueError:
+
+        return {
+            "error": "Invalid ECG file."
+        }
+
+    if len(ecg_data) != 1250:
+
+        return {
+            "error": "ECG file must contain exactly 1250 samples."
+        }
+
+    return predict_afib(
+        patient_id,
+        ecg_data
+    )
+
+    return predict_afib(
+
+        patient_id,
+
+        ecg_data
+
+    )
 
 
 def predict_afib(patient_id, ecg_data):

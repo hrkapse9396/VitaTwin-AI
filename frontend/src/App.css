@@ -1613,3 +1613,35 @@ font-size:16px;
 font-weight:600;
 
 }
+
+.report-btn {
+
+    width: 100%;
+
+    margin-top: 20px;
+
+    padding: 12px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #2563eb;
+
+    color: white;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.3s;
+
+}
+
+.report-btn:hover {
+
+    background: #1d4ed8;
+
+}

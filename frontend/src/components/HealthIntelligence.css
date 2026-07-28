@@ -1,0 +1,43 @@
+.health-grid{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+gap:20px;
+
+margin-top:20px;
+
+}
+
+.health-grid div{
+
+background:#f7f8fc;
+
+padding:15px;
+
+border-radius:10px;
+
+text-align:center;
+
+}
+
+.health-grid strong{
+
+display:block;
+
+margin-bottom:8px;
+
+color:#333;
+
+}
+
+.health-grid p{
+
+font-size:18px;
+
+font-weight:600;
+
+color:#1b4de4;
+
+}

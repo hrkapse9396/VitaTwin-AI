@@ -1,132 +1,65 @@
-function AIExplanation({explanation}){
+function AIExplanation({ explanation }) {
 
+    return (
 
-return(
+        <div className="card">
 
-<div className="card">
+            <h2>AI Decision Explanation</h2>
 
+            <h3>
+                Prediction:
+                <span> {explanation.prediction}</span>
+            </h3>
 
-<h2>
-AI Decision Explanation
-</h2>
+            <p>
+                <strong>
+                    Confidence: {explanation.confidence}%
+                </strong>
+            </p>
 
+            <hr />
 
+            <h3>Summary</h3>
 
-<h3>
-Prediction:
-<span>
+            <p>
+                {explanation.summary}
+            </p>
 
- {explanation.prediction}
+            <h3>Clinical Finding</h3>
 
-</span>
-</h3>
+            <p>
+                {explanation.finding}
+            </p>
 
+            <h3>Recommendation</h3>
 
+            <p>
+                {explanation.recommendation}
+            </p>
 
+            <h3>Important ECG Regions</h3>
 
-<p>
+            <div>
 
-Confidence:
+                {
+                    explanation.important_regions.map((region, index) => (
 
-<strong>
- {explanation.confidence}%
+                        <span
+                            key={index}
+                            className="region-box"
+                        >
+                            {region}
+                        </span>
 
-</strong>
+                    ))
+                }
 
-</p>
+            </div>
 
+        </div>
 
-
-
-
-<h3>
-Why AI detected this?
-</h3>
-
-
-
-<ul>
-
-
-{
-
-explanation.explanations.map(
-
-(reason,index)=>(
-
-
-<li key={index}>
-
-{reason}
-
-</li>
-
-
-)
-
-)
-
+    );
 
 }
-
-
-
-</ul>
-
-
-
-
-
-<h3>
-Important ECG Regions
-</h3>
-
-
-
-<div>
-
-
-{
-
-explanation.important_regions.map(
-
-(region,index)=>(
-
-
-<span
-
-key={index}
-
-className="region-box"
-
->
-
-{region}
-
-</span>
-
-
-)
-
-
-)
-
-
-}
-
-
-
-</div>
-
-
-
-</div>
-
-
-)
-
-
-}
-
 
 export default AIExplanation;
