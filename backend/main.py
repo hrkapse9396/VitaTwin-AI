@@ -11,6 +11,7 @@ from routes.patient import router as patient_router
 from routes.explanation import router as explanation_router
 
 from routes.health_intelligence import router as health_intelligence_router
+from routes.recommendation import router as recommendation_router
 
 from routes.patient_twin import router as patient_twin_router
 from routes.report import router as report_router
@@ -63,6 +64,7 @@ app.include_router(patient_router)
 app.include_router(explanation_router)
 
 app.include_router(health_intelligence_router)
+app.include_router(recommendation_router)
 
 app.include_router(patient_twin_router)
 
