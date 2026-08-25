@@ -21,418 +21,236 @@ import PatientTwin from "../components/PatientTwin";
 
 function Dashboard(){
 
-
-const [patients,setPatients]=useState([]);
-
-
-const [patientId,setPatientId]=useState(1);
-
-
-const [data,setData]=useState(null);
-
-
-const [ecgLength,setEcgLength]=useState(0);
-
-
-const [explanation,setExplanation]=useState(null);
-const [intelligence,setIntelligence]=useState(null);
-const [patientTwin,setPatientTwin]=useState(null);
-const loadDashboard = () => {
-
-    API.get(`/patients/${patientId}/dashboard`)
-
-        .then((response) => {
-
-            setData(response.data);
-
-        })
-
-        .catch((error) => {
-
-            console.log("Dashboard Error:", error);
-
-        });
-
-};
-
-const loadExplanation = () => {
-
-    API.get(`/patients/${patientId}/explanation`)
-
-        .then((response) => {
-
-            setExplanation(response.data);
-
-        })
-
-        .catch((error) => {
-
-            console.log("Explanation Error:", error);
-
-        });
-
-};
-
-
-useEffect(()=>{
-
-
-API.get("/patients/")
-
-
-.then((response)=>{
-
-
-setPatients(response.data);
-
-
-})
-
-
-.catch((error)=>{
-
-
-console.log(
-"Patient API Error:",
-error
-);
-
-
-});
-
-
-},[]);
-
-
-
-useEffect(() => {
-
-    loadDashboard();
-
-}, [patientId]);
-
-
-useEffect(() => {
-
-    loadExplanation();
-
-}, [patientId]);
-
-const loadHealthIntelligence = () => {
-
-    API.get(`/patients/${patientId}/health-intelligence`)
-
-        .then((response) => {
-
-            setIntelligence(response.data);
-
-        })
-
-        .catch((error) => {
-
-            console.log("Health Intelligence Error:", error);
-
-        });
-
-};
-
-useEffect(() => {
-
-    loadHealthIntelligence();
-
-}, [patientId]);
-const loadPatientTwin = () => {
-
-    API.get(`/patients/${patientId}/patient-twin`)
-
-        .then((response) => {
-
-            setPatientTwin(response.data);
-
-        })
-
-        .catch((error) => {
-
-            console.log("Patient Twin Error:", error);
-
-        });
-
-};
-useEffect(() => {
-
-    loadPatientTwin();
-
-}, [patientId]);
-
-if(!data){
-
-
-return(
-
-<div className="loading-screen">
-
-<h2>
-Loading Patient Health Twin...
-</h2>
-
-</div>
-
-)
-
-
-}
-
-
-
-
-
-
-
-return(
-
-
-<div className="dashboard">
-
-
-
-
-
-<header className="dashboard-header">
-
-
-<div className="logo-section">
-
-
-<h1>
-❤️ VitaTwin AI
-</h1>
-
-
-<p>
-AI Powered Cardiac Health Monitoring System
-</p>
-
-
-</div>
-
-
-
-
-<div className="system-status">
-
-● System Active
-
-</div>
-
-
-</header>
-
-
-
-
-
-
-
-<div className="patient-selector">
-
-
-<label>
-
-Select Patient:
-
-</label>
-
-
-<select
-
-value={patientId}
-
-onChange={
-(e)=>
-setPatientId(Number(e.target.value))
-}
-
->
-
-
-{
-
-patients.map((patient)=>(
-
-
-<option
-
-key={patient.id}
-
-value={patient.id}
-
->
-
-{patient.name}
-
-
-</option>
-
-
-))
-
-
-}
-
-
-</select>
-
-</div>
-
-<h2 className="section-title">
-    ECG Analysis
-</h2>
-<ECGUpload
-    patientId={patientId}
-    onUploadSuccess={() => {
+    const [patients,setPatients]=useState([]);
+    const [patientId,setPatientId]=useState(1);
+    const [data,setData]=useState(null);
+    const [ecgLength,setEcgLength]=useState(0);
+    const [explanation,setExplanation]=useState(null);
+    const [intelligence,setIntelligence]=useState(null);
+    const [patientTwin,setPatientTwin]=useState(null);
+    const [recommendation,setRecommendation]=useState(null);
+
+    const loadDashboard = () => {
+        API.get(`/patients/${patientId}/dashboard`)
+            .then((response) => {
+                setData(response.data);
+            })
+            .catch((error) => {
+                console.log("Dashboard Error:", error);
+            });
+    };
+
+    const loadExplanation = () => {
+        API.get(`/patients/${patientId}/explanation`)
+            .then((response) => {
+                setExplanation(response.data);
+            })
+            .catch((error) => {
+                console.log("Explanation Error:", error);
+            });
+    };
+
+    const loadHealthIntelligence = () => {
+        API.get(`/patients/${patientId}/health-intelligence`)
+            .then((response) => {
+                setIntelligence(response.data);
+            })
+            .catch((error) => {
+                console.log("Health Intelligence Error:", error);
+            });
+    };
+
+    const loadPatientTwin = () => {
+        API.get(`/patients/${patientId}/patient-twin`)
+            .then((response) => {
+                setPatientTwin(response.data);
+            })
+            .catch((error) => {
+                console.log("Patient Twin Error:", error);
+            });
+    };
+
+    const loadRecommendation = () => {
+        API.get(`/patients/${patientId}/recommendations`)
+            .then((response) => {
+                setRecommendation(response.data);
+            })
+            .catch((error) => {
+                console.log("Recommendation Error:", error);
+                setRecommendation(null);
+            });
+    };
+
+    useEffect(()=>{
+        API.get("/patients/")
+            .then((response)=>{
+                setPatients(response.data);
+            })
+            .catch((error)=>{
+                console.log("Patient API Error:", error);
+            });
+    },[]);
+
+    useEffect(() => {
+        setRecommendation(null);
         loadDashboard();
         loadExplanation();
         loadHealthIntelligence();
         loadPatientTwin();
-    }}
-/>
+        loadRecommendation();
+    }, [patientId]);
 
-<div className="page-title">
+    if(!data){
+        return(
+            <div className="loading-screen">
+                <h2>Loading Patient Health Twin...</h2>
+            </div>
+        );
+    }
 
+    return(
+        <div className="dashboard">
 
+            <header className="dashboard-header">
+                <div className="logo-section">
+                    <h1>❤️ VitaTwin AI</h1>
+                    <p>AI Powered Cardiac Health Monitoring System</p>
+                </div>
 
-</div>
+                <div className="system-status">
+                    ● System Active
+                </div>
+            </header>
 
-<div className="page-title">
+            <div className="patient-selector">
+                <label>Select Patient:</label>
 
-<h2>
+                <select
+                    value={patientId}
+                    onChange={(e)=>setPatientId(Number(e.target.value))}
+                >
+                    {patients.map((patient)=>(
+                        <option key={patient.id} value={patient.id}>
+                            {patient.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
 
-Patient Health Twin Dashboard
+            <h2 className="section-title">
+                ECG Analysis
+            </h2>
 
-</h2>
+            <ECGUpload
+                patientId={patientId}
+                onUploadSuccess={() => {
+                    loadDashboard();
+                    loadExplanation();
+                    loadHealthIntelligence();
+                    loadPatientTwin();
+                    loadRecommendation();
+                }}
+            />
 
+            <div className="page-title">
+                <h2>Patient Health Twin Dashboard</h2>
+                <p>Real-time cardiac health analysis and prediction</p>
+            </div>
 
-<p>
+            {/* ================= Patient Overview ================= */}
 
-Real-time cardiac health analysis and prediction
+            <h2 className="section-title">
+                Patient Overview
+            </h2>
 
-</p>
+            <div className="top-grid">
 
+                <PatientCard
+                    patient={data.patient}
+                />
 
-</div>
+                <RiskCard
+                    prediction={data.latest_prediction}
+                />
 
+                <AIClinicalSummary
+                    patient={data.patient}
+                    prediction={data.latest_prediction}
+                    explanation={explanation}
+                />
 
+                <AIRecommendation
+                    recommendation={recommendation}
+                />
 
+            </div>
 
+            {/* ================= AI Health Intelligence ================= */}
 
+            <h2 className="section-title">
+                AI Health Intelligence
+            </h2>
 
-{/* ================= Patient Overview ================= */}
+            <div className="top-grid">
 
-<h2 className="section-title">
-    Patient Overview
-</h2>
+                <HealthSummary
+                    summary={data.health_summary}
+                    prediction={data.latest_prediction}
+                    ecgLength={ecgLength}
+                />
 
-<div className="top-grid">
+                <HealthIntelligence
+                    intelligence={intelligence}
+                />
 
-    <PatientCard
-        patient={data.patient}
-    />
+                <PatientTwin
+                    twin={patientTwin}
+                />
 
-    <RiskCard
-        prediction={data.latest_prediction}
-    />
+            </div>
 
-    <AIClinicalSummary
-        patient={data.patient}
-        prediction={data.latest_prediction}
-        explanation={explanation}
-    />
+            {/* ================= ECG Analysis ================= */}
 
-    <AIRecommendation
-        prediction={data.latest_prediction}
-    />
+            <ECGChart
+                patientId={patientId}
+                setEcgLength={setEcgLength}
+            />
 
-</div>
+            {
+                explanation &&
+                <AIExplanation
+                    explanation={explanation}
+                />
+            }
 
-{/* ================= AI Health Intelligence ================= */}
+            {/* ================= AI Model ================= */}
 
-<h2 className="section-title">
-    AI Health Intelligence
-</h2>
+            <h2 className="section-title">
+                AI Model Performance
+            </h2>
 
-<div className="top-grid">
+            <ModelPerformance />
 
-    <HealthSummary
-        summary={data.health_summary}
-        prediction={data.latest_prediction}
-        ecgLength={ecgLength}
-    />
+            {/* ================= Prediction Analytics ================= */}
 
-    <HealthIntelligence
-        intelligence={intelligence}
-    />
+            <h2 className="section-title">
+                Prediction Analytics
+            </h2>
 
-    <PatientTwin
-        twin={patientTwin}
-    />
+            <PredictionHistory
+                history={data.history}
+            />
 
-</div>
+            <HealthTimeline
+                history={data.history}
+            />
 
+            <RiskTrend
+                history={data.history}
+            />
 
-{/* ================= ECG Analysis ================= */}
-
-
-<ECGChart
-    patientId={patientId}
-    setEcgLength={setEcgLength}
-/>
-
-{
-    explanation &&
-    <AIExplanation
-        explanation={explanation}
-    />
+        </div>
+    );
 }
-
-
-
-{/* ================= AI Model ================= */}
-
-<h2 className="section-title">
-    AI Model Performance
-</h2>
-
-<ModelPerformance />
-
-
-
-
-{/* ================= Prediction Analytics ================= */}
-
-<h2 className="section-title">
-    Prediction Analytics
-</h2>
-
-<PredictionHistory
-    history={data.history}
-/>
-
-<HealthTimeline
-    history={data.history}
-/>
-
-<RiskTrend
-    history={data.history}
-/>
-
-</div>
-
-
-)
-
-
-}
-
-
 
 export default Dashboard;
