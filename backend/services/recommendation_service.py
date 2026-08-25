@@ -12,8 +12,18 @@ def _risk_band(risk_score):
     return "HIGH"
 
 
+def _numeric_risk(value):
+    """Return a numeric risk score without converting missing data to zero."""
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _build_recommendations(latest, predictions):
-    latest_risk = float(latest.risk_score or 0)
+    latest_risk = _numeric_risk(latest.risk_score)
     latest_prediction = (latest.prediction or "UNKNOWN").upper()
     recent = predictions[:5]
     recent_afib_count = sum(
@@ -24,9 +34,14 @@ def _build_recommendations(latest, predictions):
 
     previous_risk = None
     if len(predictions) > 1:
-        previous_risk = float(predictions[1].risk_score or 0)
+        previous_risk = _numeric_risk(predictions[1].risk_score)
 
-    risk_change = round(latest_risk - previous_risk, 2) if previous_risk is not None else None
+    risk_change = (
+        round(latest_risk - previous_risk, 2)
+        if latest_risk is not None and previous_risk is not None
+        else None
+    )
+
     if risk_change is None:
         risk_trend = "INSUFFICIENT HISTORY"
     elif risk_change > 5:
@@ -36,11 +51,15 @@ def _build_recommendations(latest, predictions):
     else:
         risk_trend = "STABLE"
 
-    priority = "LOW"
-    if latest_risk >= 70 or risk_trend == "INCREASING" or recent_afib_count >= 3:
-        priority = "HIGH"
-    elif latest_risk >= 30 or recent_afib_count > 0:
-        priority = "MEDIUM"
+    # Missing risk is not treated as zero or automatically classified as low risk.
+    if latest_risk is None:
+        priority = "UNKNOWN"
+    else:
+        priority = "LOW"
+        if latest_risk >= 70 or risk_trend == "INCREASING" or recent_afib_count >= 3:
+            priority = "HIGH"
+        elif latest_risk >= 30 or recent_afib_count > 0:
+            priority = "MEDIUM"
 
     recommendations = []
 
@@ -81,6 +100,12 @@ def _build_recommendations(latest, predictions):
             "title": "Risk trend is stable",
             "message": "Your recent risk scores are relatively stable. Continue regular monitoring so that meaningful changes can be identified over time."
         })
+    else:
+        recommendations.append({
+            "type": "RISK_TREND",
+            "title": "Risk trend cannot yet be determined",
+            "message": "There is not enough complete risk-score history to determine a reliable risk trend. Continue collecting ECG records so that a meaningful pattern can be established."
+        })
 
     if recent_afib_count > 0:
         recommendations.append({
@@ -99,8 +124,10 @@ def _build_recommendations(latest, predictions):
         follow_up_message = "Your current record indicates a higher monitoring priority. Arrange professional medical review promptly, particularly if abnormal results or concerning symptoms are present."
     elif priority == "MEDIUM":
         follow_up_message = "Your record indicates that continued cardiac monitoring is appropriate. Consider professional follow-up if abnormal results recur or symptoms are concerning."
-    else:
+    elif priority == "LOW":
         follow_up_message = "Your current record indicates a lower monitoring priority. Continue routine monitoring and keep your ECG history updated."
+    else:
+        follow_up_message = "The monitoring priority cannot be determined reliably because the latest risk score is unavailable. Continue collecting ECG records and review the available results with a healthcare professional when appropriate."
 
     recommendations.append({
         "type": "FOLLOW_UP",
@@ -114,8 +141,9 @@ def _build_recommendations(latest, predictions):
         "message": "If you experience severe or persistent chest pain, severe shortness of breath, fainting, or other emergency symptoms, seek urgent medical care rather than relying on this system."
     })
 
+    risk_text = f"{latest_risk:.2f}" if latest_risk is not None else "unavailable"
     summary = (
-        f"Your latest ECG is {latest_prediction} with a {latest_risk:.2f} risk score. "
+        f"Your latest ECG is {latest_prediction} with a {risk_text} risk score. "
         f"The recent risk trend is {risk_trend.lower()} and {recent_afib_count} of the last {recent_count} ECG records show AFIB. "
         f"Current monitoring priority is {priority.lower()}."
     )
@@ -124,7 +152,7 @@ def _build_recommendations(latest, predictions):
         "summary": summary,
         "monitoring_priority": priority,
         "latest_prediction": latest_prediction,
-        "latest_risk_score": round(latest_risk, 2),
+        "latest_risk_score": round(latest_risk, 2) if latest_risk is not None else None,
         "latest_risk_level": latest.risk_level,
         "previous_risk_score": previous_risk,
         "risk_change": risk_change,
