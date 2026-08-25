@@ -37,6 +37,7 @@ const [ecgLength,setEcgLength]=useState(0);
 const [explanation,setExplanation]=useState(null);
 const [intelligence,setIntelligence]=useState(null);
 const [patientTwin,setPatientTwin]=useState(null);
+const [recommendation,setRecommendation]=useState(null);
 const loadDashboard = () => {
 
     API.get(`/patients/${patientId}/dashboard`)
@@ -161,6 +162,30 @@ const loadPatientTwin = () => {
 useEffect(() => {
 
     loadPatientTwin();
+
+}, [patientId]);
+
+const loadRecommendation = () => {
+
+    API.get(`/patients/${patientId}/recommendations`)
+
+        .then((response) => {
+
+            setRecommendation(response.data);
+
+        })
+
+        .catch((error) => {
+
+            console.log("Recommendation Error:", error);
+
+        });
+
+};
+
+useEffect(() => {
+
+    loadRecommendation();
 
 }, [patientId]);
 
@@ -294,6 +319,7 @@ value={patient.id}
         loadExplanation();
         loadHealthIntelligence();
         loadPatientTwin();
+        loadRecommendation();
     }}
 />
 
@@ -349,7 +375,7 @@ Real-time cardiac health analysis and prediction
     />
 
     <AIRecommendation
-        prediction={data.latest_prediction}
+        recommendation={recommendation}
     />
 
 </div>
