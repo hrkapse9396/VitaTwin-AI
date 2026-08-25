@@ -11,6 +11,7 @@ from database.models import Patient, ECGPrediction
 
 from services.health_intelligence_service import generate_health_intelligence
 from services.patient_twin_service import generate_patient_twin
+from services.recommendation_service import generate_recommendations
 
 import os
 
@@ -42,13 +43,9 @@ def generate_pdf_report(patient_id: int):
 
         latest = history[0]
 
-        intelligence = generate_health_intelligence(
-            patient_id
-        )
-
-        twin = generate_patient_twin(
-            patient_id
-        )
+        intelligence = generate_health_intelligence(patient_id)
+        twin = generate_patient_twin(patient_id)
+        recommendations = generate_recommendations(patient_id)
 
         os.makedirs("reports", exist_ok=True)
 
@@ -71,9 +68,7 @@ def generate_pdf_report(patient_id: int):
             )
         )
 
-        elements.append(
-            Spacer(1, 20)
-        )
+        elements.append(Spacer(1, 20))
 
         # =====================================
         # Patient Information
@@ -89,18 +84,14 @@ def generate_pdf_report(patient_id: int):
         elements.append(
             Paragraph(f"Name : {patient.name}", styles["Normal"])
         )
-
         elements.append(
             Paragraph(f"Age : {patient.age}", styles["Normal"])
         )
-
         elements.append(
             Paragraph(f"Gender : {patient.gender}", styles["Normal"])
         )
 
-        elements.append(
-            Spacer(1, 15)
-        )
+        elements.append(Spacer(1, 15))
 
         # =====================================
         # Latest Prediction
@@ -119,21 +110,18 @@ def generate_pdf_report(patient_id: int):
                 styles["Normal"]
             )
         )
-
         elements.append(
             Paragraph(
                 f"Confidence : {latest.confidence:.2f} %",
                 styles["Normal"]
             )
         )
-
         elements.append(
             Paragraph(
                 f"Risk Score : {latest.risk_score:.2f}",
                 styles["Normal"]
             )
         )
-
         elements.append(
             Paragraph(
                 f"Risk Level : {latest.risk_level}",
@@ -141,9 +129,7 @@ def generate_pdf_report(patient_id: int):
             )
         )
 
-        elements.append(
-            Spacer(1, 15)
-        )
+        elements.append(Spacer(1, 15))
 
         # =====================================
         # Predictive Health Intelligence
@@ -157,22 +143,14 @@ def generate_pdf_report(patient_id: int):
         )
 
         for key, value in intelligence.items():
-
             elements.append(
-
                 Paragraph(
-
                     f"{key.replace('_',' ').title()} : {value}",
-
                     styles["Normal"]
-
                 )
-
             )
 
-        elements.append(
-            Spacer(1, 15)
-        )
+        elements.append(Spacer(1, 15))
 
         # =====================================
         # Patient Twin
@@ -186,22 +164,63 @@ def generate_pdf_report(patient_id: int):
         )
 
         for key, value in twin.items():
-
             elements.append(
-
                 Paragraph(
-
                     f"{key.replace('_',' ').title()} : {value}",
-
                     styles["Normal"]
-
                 )
+            )
 
+        elements.append(Spacer(1, 15))
+
+        # =====================================
+        # AI Health Recommendations
+        # =====================================
+
+        elements.append(
+            Paragraph(
+                "<b>AI Health Recommendations</b>",
+                styles["Heading2"]
+            )
+        )
+
+        elements.append(
+            Paragraph(
+                f"Monitoring Priority : {recommendations.get('monitoring_priority', 'LOW')}",
+                styles["Normal"]
+            )
+        )
+
+        elements.append(
+            Paragraph(
+                recommendations.get("summary", "No recommendation summary available."),
+                styles["Normal"]
+            )
+        )
+
+        for item in recommendations.get("recommendations", []):
+            elements.append(
+                Paragraph(
+                    f"• {item}",
+                    styles["Normal"]
+                )
             )
 
         elements.append(
-            Spacer(1, 15)
+            Paragraph(
+                f"Suggested Follow-up : {recommendations.get('recommended_follow_up', 'Routine monitoring')}",
+                styles["Normal"]
+            )
         )
+
+        elements.append(
+            Paragraph(
+                "These recommendations are generated from the patient's stored ECG history and are intended to support monitoring. They do not replace professional medical diagnosis or treatment.",
+                styles["Normal"]
+            )
+        )
+
+        elements.append(Spacer(1, 15))
 
         # =====================================
         # Prediction History
@@ -215,24 +234,16 @@ def generate_pdf_report(patient_id: int):
         )
 
         for item in history:
-
             elements.append(
-
                 Paragraph(
-
                     f"{item.timestamp.strftime('%d-%m-%Y %H:%M')} | "
                     f"{item.prediction} | "
                     f"{item.confidence:.2f}%",
-
                     styles["Normal"]
-
                 )
-
             )
 
-        elements.append(
-            Spacer(1, 20)
-        )
+        elements.append(Spacer(1, 20))
 
         # =====================================
         # Clinical Summary
@@ -246,18 +257,10 @@ def generate_pdf_report(patient_id: int):
         )
 
         elements.append(
-
             Paragraph(
-
-                "This report was generated using VitaTwin AI. "
-                "The prediction and health intelligence are intended "
-                "to assist clinicians and should not replace "
-                "professional medical diagnosis.",
-
+                "This report was generated using VitaTwin AI. The prediction, health intelligence, and recommendations are intended to assist clinicians and support patient monitoring. They should not replace professional medical diagnosis or treatment.",
                 styles["Normal"]
-
             )
-
         )
 
         doc.build(elements)
@@ -265,5 +268,4 @@ def generate_pdf_report(patient_id: int):
         return filename
 
     finally:
-
         db.close()
